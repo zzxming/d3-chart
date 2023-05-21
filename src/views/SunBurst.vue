@@ -57,14 +57,14 @@
 
 	let format = d3.format(',d');
 	let tips = ref(
-		(d3Tip as Function)()
+		(d3Tip as any)()
 			.attr('class', 'd3_tip')
-			.html(function (e: MouseEvent, d) {
-				return `
+			.html(
+				(e: MouseEvent, d: d3.HierarchyRectangularNode<Data>) => `
 			            <strong>${d.data.name}<strong>
-			            <span>${format(d.value)}</span>
-			        `;
-			})
+			            <span>${format(d.value || 0)}</span>
+			        `
+			)
 	);
 	// 加载数据
 	let loadData = async () => {
@@ -92,7 +92,7 @@
 			d3.quantize(d3.interpolateRainbow, (data.value as SunDataWitchChildren).children.length + 1)
 		);
 		let arc = d3
-			.arc<d3.HierarchyRectangularNode<Data>>()
+			.arc<d3.HierarchyRectangularNode<Data>['current']>()
 			.startAngle((d) => d.x0)
 			.endAngle((d) => d.x1)
 			.padAngle((d) => Math.min((d.x1 - d.x0) / 2, 0.005))
@@ -110,8 +110,8 @@
 		};
 		const root = partition(data.value);
 		root.each((d) => (d.current = d));
-		const svg = d3.select('.chart_box').append('svg').attr('viewBox', [0, 0, width, height]).attr('width', width);
 
+		const svg = d3.select('.chart_box').append('svg').attr('viewBox', [0, 0, width, height]).attr('width', width);
 		const g = svg.append('g').attr('transform', `translate(${width / 2},${height / 2})`);
 
 		g.call(tips.value);
@@ -155,10 +155,8 @@
 			.join('text')
 			.attr('dy', '0.35em')
 			.attr('fill-opacity', (d) => +labelVisible(d.current))
-			.attr('transform', (d) => {
-				return labelTransform(d.current);
-			})
-			// 根据
+			.attr('transform', (d) => labelTransform(d.current))
+			// 根据层级改变字体大小
 			.attr('style', (d) => {
 				return `font-size: ${0.5 ** d.depth * 8 + 10}px`;
 			})
@@ -188,41 +186,43 @@
 
 			const t = g.transition().duration(750);
 
-			console.log(t);
 			// Transition the data on all arcs, even the ones that aren’t visible,
 			// so that if this transition is interrupted, entering arcs will start
 			// the next transition from the desired position.
-			path.transition(t)
+			// 使用 this 的时候注意, 使用一个变量接受, 并明确指明类型, 否则 function 容易报错
+			path.transition(t as unknown as d3.Transition<d3.BaseType, d3.HierarchyRectangularNode<Data>, any, any>)
 				.tween('data', (d) => {
 					const i = d3.interpolate(d.current, d.target);
 					return (t) => (d.current = i(t));
 				})
 				.filter(function (d) {
-					return +this.getAttribute('fill-opacity') || arcVisible(d.target);
+					let self = this as SVGGElement;
+					return Boolean(Number(self.getAttribute('fill-opacity')) || labelVisible(d.target));
 				})
 				.attr('fill-opacity', (d) => (arcVisible(d.target) ? (d.children ? 0.6 : 0.4) : 0))
 				.attr('pointer-events', (d) => (arcVisible(d.target) ? 'auto' : 'none'))
-
-				.attrTween('d', (d) => () => arc(d.current));
+				// attrTween(name: string, factory: ValueFn<GElement, Datum, (this: GElement, t: number) => string>): this;
+				.attrTween('d', (d) => () => arc(d.current) as string);
 
 			label
 				.filter(function (d) {
-					return +this.getAttribute('fill-opacity') || labelVisible(d.target);
+					let self = this as SVGGElement;
+					return Boolean(Number(self.getAttribute('fill-opacity')) || labelVisible(d.target));
 				})
-				.transition(t)
+				.transition(t as unknown as d3.Transition<d3.BaseType, d3.HierarchyRectangularNode<Data>, any, any>)
 				.attr('fill-opacity', (d) => +labelVisible(d.target))
 				.attrTween('transform', (d) => () => labelTransform(d.current));
 		}
 
-		function arcVisible(d) {
+		function arcVisible(d: d3.HierarchyRectangularNode<Data>['target']) {
 			return d.y1 <= 3 && d.y0 >= 1 && d.x1 > d.x0;
 		}
 
-		function labelVisible(d) {
+		function labelVisible(d: d3.HierarchyRectangularNode<Data>['target']) {
 			return d.y1 <= 3 && d.y0 >= 1 && (d.y1 - d.y0) * (d.x1 - d.x0) > 0.03;
 		}
 
-		function labelTransform(d) {
+		function labelTransform(d: d3.HierarchyRectangularNode<Data>['current']) {
 			const x = (((d.x0 + d.x1) / 2) * 180) / Math.PI;
 			const y = ((d.y0 + d.y1) / 2) * radius;
 			return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;

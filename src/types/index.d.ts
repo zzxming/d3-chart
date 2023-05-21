@@ -4,7 +4,12 @@ declare module 'd3' {
 	export interface HierarchyNode<Datum> {
 		new (data: Datum): this;
 
-		current: this;
+		current: {
+			x0: number;
+			y0: number;
+			x1: number;
+			y1: number;
+		};
 		/**
 		 * The associated data, as specified to the constructor.
 		 */
