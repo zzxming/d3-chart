@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 // import Home from '@/views/Home.vue';
 
-const routes = [
+export const routes = [
 	{
 		path: '/',
 		redirect: '/chinamap',
@@ -15,6 +15,11 @@ const routes = [
 		path: '/sunburst',
 		name: 'SunBurst',
 		component: () => import('@/views/SunBurst.vue'),
+	},
+	{
+		path: '/TheWealthAndHealthOfNations',
+		name: 'TheWealthAndHealthOfNations',
+		component: () => import('@/views/TheWealthAndHealthOfNations.vue'),
 	},
 ];
 
