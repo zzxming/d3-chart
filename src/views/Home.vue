@@ -1,6 +1,4 @@
-<template>
-	<div>home</div>
-</template>
+<template>home</template>
 
 <style lang="less" scoped></style>
 
