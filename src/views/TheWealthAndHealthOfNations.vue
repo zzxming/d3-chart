@@ -1,13 +1,43 @@
 <template>
-	<div class="mid">
-		<div v-if="loading">loading</div>
-		<div v-if="!loading && loadError">error</div>
-		<div
-			v-if="!loading && !loadError"
-			class="chart_box"
-		></div>
-	</div>
+	<LoadingTip
+		:loading="loading"
+		:loadError="loadError"
+	>
+		<div class="chart_box"></div>
+	</LoadingTip>
 </template>
+
+<style lang="less" scoped>
+	// 样式有问题
+	.mid {
+		flex-direction: column;
+	}
+	.d3_tip-content {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		border: 1px solid #000;
+		border-radius: 4px;
+		padding: 4px 8px;
+		font-size: 12px;
+		&::after {
+			position: absolute;
+			bottom: -6px;
+			left: 50%;
+			width: 10px;
+			height: 10px;
+			transform: translateX(-50%) rotateZ(45deg);
+			content: '';
+			display: block;
+			background-color: #fff;
+			border: 1px solid transparent;
+			border-bottom-color: #000;
+			border-right-color: #000;
+		}
+	}
+</style>
 
 <script lang="ts" setup>
 	import * as d3 from 'd3';
@@ -119,9 +149,10 @@
 		});
 		loading.value = false;
 
-		if (!res) return null;
-		dataRange.value = res.range;
-		data.value = res.data;
+		if (res) {
+			dataRange.value = res.range;
+			data.value = res.data;
+		}
 	};
 	onMounted(async () => {
 		await loadData();
@@ -130,7 +161,11 @@
 
 		const { innerWidth: width, innerHeight: height } = window;
 		const margin = { top: 40, right: 20, bottom: 40, left: 40 };
-		const svg = d3.select('.chart_box').append('svg').attr('viewBox', [0, 0, width, height]);
+		const svg = d3
+			.select('.chart_box')
+			.append('svg')
+			.attr('viewBox', [0, 0, width, height])
+			.attr('width', width - margin.left - margin.right);
 		// x 为经费
 		let x = d3.scaleLinear(
 			[dataRange.value.min_money, dataRange.value.max_money],
@@ -151,7 +186,7 @@
 				.call((g) =>
 					g
 						.append('text')
-						.attr('x', width)
+						.attr('x', width - margin.right - 10)
 						.attr('y', margin.bottom - 5)
 						.attr('fill', 'currentColor')
 						.attr('text-anchor', 'end')
@@ -162,7 +197,7 @@
 		let yg = svg.append('g');
 		let yAxis = (g: typeof yg) =>
 			g
-				.attr('transform', `translate(${margin.left},0)`)
+				.attr('transform', `translate(${margin.left}, 0)`)
 				.call(d3.axisLeft(y))
 				.call((g) => g.select('.domain').remove())
 				.call((g) =>
@@ -317,38 +352,3 @@
 		tips.value.destroy();
 	});
 </script>
-
-<style lang="less" scoped>
-	// 样式有问题
-	.mid {
-		flex-direction: column;
-	}
-	.chart_box {
-		background-color: #fff;
-	}
-	.d3_tip-content {
-		position: relative;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		box-sizing: border-box;
-		border: 1px solid #000;
-		border-radius: 4px;
-		padding: 4px 8px;
-		font-size: 12px;
-	}
-	.d3_tip-content::after {
-		position: absolute;
-		bottom: -6px;
-		left: 50%;
-		width: 10px;
-		height: 10px;
-		transform: translateX(-50%) rotateZ(45deg);
-		content: '';
-		display: block;
-		background-color: #fff;
-		border: 1px solid transparent;
-		border-bottom-color: #000;
-		border-right-color: #000;
-	}
-</style>

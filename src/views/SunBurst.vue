@@ -1,36 +1,16 @@
 <template>
-	<div class="mid">
-		<div v-if="loading">loading</div>
-		<div v-if="!loading && loadError">error</div>
-		<div
-			v-if="!loading && !loadError"
-			class="chart_box"
-		></div>
-	</div>
+	<LoadingTip
+		:loading="loading"
+		:loadError="loadError"
+	>
+		<div class="chart_box"></div>
+	</LoadingTip>
 </template>
 
 <style lang="less" scoped>
 	.chart_box {
 		background-color: #fff;
 	}
-
-	// .d3-tip {
-	// 		position: relative;
-	// 		background-color: #000;
-	// 		color: #fff;
-	// 		border-radius: 6px;
-	// 		padding: 4px;
-	// 		&::after {
-	// 			content: '';
-	// 			display: block;
-	// 			background-color: #000;
-	// 			width: 12px;
-	// 			height: 12px;
-	// 			position: absolute;
-	// 			left: 50%;
-	// 			transform: rotateZ(45deg) translateX(-50%);
-	// 		}
-	// 	}
 </style>
 
 <script lang="ts" setup>
@@ -69,7 +49,7 @@
 	// 加载数据
 	let loadData = async () => {
 		let res = await new Promise<Data>(async (resolve, reject) => {
-			resolve((await import('../assets/d3json/ZoomableSunburst.json')).default as Data);
+			resolve((await import('@/assets/d3json/ZoomableSunburst.json')).default as Data);
 		}).catch((err) => {
 			console.log(err);
 			loadError.value = true;
@@ -111,7 +91,7 @@
 		const root = partition(data.value);
 		root.each((d) => (d.current = d));
 
-		const svg = d3.select('.chart_box').append('svg').attr('viewBox', [0, 0, width, height]).attr('width', width);
+		const svg = d3.select('.chart_box').append('svg').attr('viewBox', [0, 0, width, height]);
 		const g = svg.append('g').attr('transform', `translate(${width / 2},${height / 2})`);
 
 		g.call(tips.value);

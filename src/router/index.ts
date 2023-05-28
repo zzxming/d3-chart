@@ -21,6 +21,11 @@ export const routes = [
 		name: 'TheWealthAndHealthOfNations',
 		component: () => import('@/views/TheWealthAndHealthOfNations.vue'),
 	},
+	{
+		path: '/bar',
+		name: 'Bar',
+		component: () => import('@/views/Bar.vue'),
+	},
 ];
 
 const router = createRouter({

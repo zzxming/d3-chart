@@ -1,12 +1,10 @@
 <template>
-	<div class="mid">
-		<div v-if="loading">loading</div>
-		<div v-if="!loading && loadError">error</div>
-		<div
-			v-if="!loading && !loadError"
-			class="chart_box"
-		></div>
-	</div>
+	<LoadingTip
+		:loading="loading"
+		:loadError="loadError"
+	>
+		<div class="chart_box"></div>
+	</LoadingTip>
 </template>
 
 <style lang="less">
@@ -23,17 +21,12 @@
 
 <script lang="ts" setup>
 	import chinaMapProvinceNameData from '@/assets/d3json/chinaMap/chinaMapProvinceNameData.json';
-	// import mapGeo from '../assets/d3json/chinaMap/xiaochimap.json';
 	import * as GeoJSON from 'geojson';
 	import * as d3 from 'd3';
-	import { ZoomTransform } from 'd3';
 	import d3Tip from 'd3-tip';
 
-	interface D3ZoomEvent {
-		sourceEvent: WheelEvent;
-		transform: ZoomTransform;
-		type: 'zoom';
-	}
+	import LoadingTip from '@/components/LoadingTip.vue';
+	import { D3ZoomEvent } from '@/interface';
 
 	let loadError = ref(false);
 	let loading = ref(true);
@@ -62,8 +55,9 @@
 		});
 		loading.value = false;
 
-		if (!data) return null;
-		return data.map((v) => v.features[0]);
+		if (data) {
+			originMapFeatures.value = data.map((v) => v.features[0]);
+		}
 	};
 	// 使用市级数据替换省级数据
 	let reaplaceData = (adcode: number, data: GeoJSON.FeatureCollection) => {
@@ -77,14 +71,12 @@
 		return newData;
 	};
 	onMounted(async () => {
-		let features: GeoJSON.Feature[] | null = await loadData();
-		if (!features) return;
+		await loadData();
+		if (!originMapFeatures.value) return;
 		let map: GeoJSON.FeatureCollection = {
 			type: 'FeatureCollection',
-			features,
+			features: originMapFeatures.value,
 		};
-		// 保存原始省份边界, 用于还原
-		originMapFeatures.value = [...features];
 
 		// 等待页面挂载完成，可以获取 dom 信息
 		await nextTick();
@@ -125,8 +117,8 @@
 			.on('click', loadInside);
 		// province.append('title').text((d) => d.properties.name);
 		// 放大和拖动
-		let zoomHandle = (zoomEvent: D3ZoomEvent) => {
-			const t = zoomEvent.transform;
+		let zoomHandle = (event: D3ZoomEvent) => {
+			const t = event.transform;
 			g.attr('transform', `translate(${t.x}, ${t.y}) scale(${t.k})`); //改变svg的位置及缩放
 			g.selectAll('circle').attr('r', 2 / t.k);
 			svg.attr('stroke-width', strokeOriginWidth / t.k);
@@ -169,7 +161,6 @@
 		let update = (data: GeoJSON.Feature[]) => {
 			//  使用join可以保证新path成功添加, 但原来其他的path不删除
 			// 注意此处会有元素复用,可以插入一个title元素就知道了
-			console.log(data);
 			province
 				.data(data)
 				.join('path')
