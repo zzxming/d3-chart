@@ -212,36 +212,6 @@
 				);
 		yg.call(yAxis);
 
-		let gg = svg.append('g');
-		// 坐标系网格
-		let grid = (g: typeof gg) =>
-			g
-				.attr('stroke', 'currentColor')
-				.attr('stroke-opacity', 0.1)
-				.call((g) =>
-					g
-						.append('g')
-						.selectAll('line')
-						.data(x.ticks())
-						.join('line')
-						.attr('x1', (d: number) => 0.5 + x(d))
-						.attr('x2', (d: number) => 0.5 + x(d))
-						.attr('y1', margin.top)
-						.attr('y2', height - margin.bottom)
-				)
-				.call((g) =>
-					g
-						.append('g')
-						.selectAll('line')
-						.data(y.ticks())
-						.join('line')
-						.attr('y1', (d: number) => 0.5 + y(d))
-						.attr('y2', (d: number) => 0.5 + y(d))
-						.attr('x1', margin.left)
-						.attr('x2', width - margin.right)
-				);
-		gg.call(grid);
-
 		// 圆点半径
 		let radius = d3.scaleSqrt(
 			[dataRange.value.min_fund_amount, dataRange.value.max_fund_amount],
@@ -295,7 +265,10 @@
 			.sort((a, b) => d3.descending(a.population, b.population))
 			.attr('cx', (d) => x(d.income))
 			.attr('cy', (d) => y(d.lifeExpectancy))
-			.attr('r', (d) => radius(d.population))
+			.attr('r', (d) => {
+				let r = radius(d.population);
+				return r < 0 ? 0 : r;
+			})
 			.on('mouseover', tips.value.show)
 			.on('mouseout', tips.value.hide)
 			.attr('fill', (d) => color.value[d.region]);
@@ -324,7 +297,10 @@
 				.transition()
 				.attr('cx', (d) => x(d.income))
 				.attr('cy', (d) => y(d.lifeExpectancy))
-				.attr('r', (d) => radius(d.population));
+				.attr('r', (d) => {
+					let r = radius(d.population);
+					return r < 0 ? 0 : r;
+				});
 		};
 
 		// 插入进度条dom

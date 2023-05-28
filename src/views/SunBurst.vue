@@ -11,6 +11,24 @@
 	.chart_box {
 		background-color: #fff;
 	}
+
+	// .d3-tip {
+	// 		position: relative;
+	// 		background-color: #000;
+	// 		color: #fff;
+	// 		border-radius: 6px;
+	// 		padding: 4px;
+	// 		&::after {
+	// 			content: '';
+	// 			display: block;
+	// 			background-color: #000;
+	// 			width: 12px;
+	// 			height: 12px;
+	// 			position: absolute;
+	// 			left: 50%;
+	// 			transform: rotateZ(45deg) translateX(-50%);
+	// 		}
+	// 	}
 </style>
 
 <script lang="ts" setup>
@@ -66,6 +84,7 @@
 		if (!data.value) return;
 
 		const { innerWidth: width, innerHeight: height } = window;
+		const scrollWidth = width - document.body.clientWidth;
 		let radius = width / 10;
 
 		let color = d3.scaleOrdinal(
