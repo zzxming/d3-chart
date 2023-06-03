@@ -10,11 +10,11 @@
 <style lang="less" scoped></style>
 
 <script lang="ts" setup>
-	import * as d3 from 'd3';
+	import { select, scaleBand, max, scaleLinear, axisBottom, axisLeft, zoom, schemeSpectral } from 'd3';
 	import d3Tip from 'd3-tip';
 	import { D3ZoomEvent, ModuleImport } from '@/interface';
 
-	import GroupBarChart from '@/components/d3/groupedBarChart';
+	import GroupBarChart from '@/components/d3/GroupedBarChart';
 
 	interface SingleBar {
 		name: string | number;
@@ -26,6 +26,7 @@
 		age: string;
 	}
 
+	/** 单柱状图 */
 	let loading = ref(true);
 	let loadError = ref(false);
 	let SingleBarData = ref<SingleBar[]>([]);
@@ -52,7 +53,7 @@
 		const margin = { top: 40, right: 20, bottom: 20, left: 60 };
 		const textHeight = 20;
 
-		const svg = d3.select('.chart_box').append('svg').attr('viewBox', [0, 0, width, height]).attr('color', '#fff');
+		const svg = select('.chart_box').append('svg').attr('viewBox', [0, 0, width, height]).attr('color', '#fff');
 
 		const tips = (d3Tip as Function)()
 			.attr('class', 'd3_tip')
@@ -63,14 +64,12 @@
 		svg.call(tips);
 		// 数据位置计算
 		// range数组的顺序影响坐标轴的数据显示顺序
-		let x = d3
-			.scaleBand()
+		let x = scaleBand()
 			.domain(SingleBarData.value.map((d) => `${d.name}`))
 			.range([margin.left, width - margin.right])
 			.padding(0.1);
-		let y = d3
-			.scaleLinear()
-			.domain([0, d3.max(SingleBarData.value, (d) => d.value) ?? 0])
+		let y = scaleLinear()
+			.domain([0, max(SingleBarData.value, (d) => d.value) ?? 0])
 			.nice()
 			.range([height - margin.bottom - textHeight, margin.top]);
 
@@ -80,7 +79,7 @@
 			g
 				.attr('transform', `translate(0, ${height - margin.bottom - textHeight})`)
 				.attr('class', 'x-axis')
-				.call(d3.axisBottom(x).tickSizeOuter(0))
+				.call(axisBottom(x).tickSizeOuter(0))
 				.call((g) =>
 					g
 						.append('text')
@@ -97,7 +96,7 @@
 			g
 				.attr('transform', `translate(${margin.left}, 0)`)
 				.attr('class', 'y-axis')
-				.call(d3.axisLeft(y))
+				.call(axisLeft(y))
 				.call((g) => g.select('.domain').remove())
 				.call((g) =>
 					g
@@ -140,10 +139,11 @@
 			bars.attr('x', (d) => x(`${d.name}`) ?? 0).attr('width', x.bandwidth());
 			xg.call(xAxis);
 		}
-		let d3zoom = d3.zoom().scaleExtent([1, 8]).translateExtent(extent).extent(extent).on('zoom', zoomed);
+		let d3zoom = zoom().scaleExtent([1, 8]).translateExtent(extent).extent(extent).on('zoom', zoomed);
 		svg.call(d3zoom as any);
 	};
 
+	/** 多柱状图 */
 	let groupBarData = ref<GroupBar[]>([]);
 	let groupBarDataAges = ref<string[]>([]);
 	let loadGroupBarData = async () => {
@@ -176,7 +176,7 @@
 			z: (d) => d.age,
 			yLabel: '↑ 不知道什么数',
 			zDomain: groupBarDataAges.value,
-			colors: d3.schemeSpectral[groupBarDataAges.value.length],
+			colors: schemeSpectral[groupBarDataAges.value.length],
 			marginBottom: margin.bottom,
 			marginLeft: margin.left,
 			marginRight: margin.right,

@@ -4,15 +4,15 @@ import { createRouter, createWebHistory } from 'vue-router';
 export const routes = [
 	{
 		path: '/',
-		redirect: '/chinamap',
+		redirect: '/ChinaMapVue',
 	},
 	{
-		path: '/chinamap',
+		path: '/ChinaMapVue',
 		name: 'ChinaMapVue',
 		component: () => import('@/views/ChinaMap.vue'),
 	},
 	{
-		path: '/sunburst',
+		path: '/SunBurst',
 		name: 'SunBurst',
 		component: () => import('@/views/SunBurst.vue'),
 	},
@@ -22,9 +22,19 @@ export const routes = [
 		component: () => import('@/views/TheWealthAndHealthOfNations.vue'),
 	},
 	{
-		path: '/bar',
+		path: '/Bar',
 		name: 'Bar',
 		component: () => import('@/views/Bar.vue'),
+	},
+	{
+		path: '/StreamgraphTransitions',
+		name: 'StreamgraphTransitions',
+		component: () => import('@/views/StreamgraphTransitions.vue'),
+	},
+	{
+		path: '/StackedAreaChart,Streamgraph',
+		name: 'StackedAreaChart,Streamgraph',
+		component: () => import('@/views/StackedAreaChart,Streamgraph.vue'),
 	},
 ];
 

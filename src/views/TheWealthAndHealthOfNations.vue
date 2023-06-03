@@ -40,7 +40,18 @@
 </style>
 
 <script lang="ts" setup>
-	import * as d3 from 'd3';
+	import {
+		select,
+		scaleLinear,
+		axisBottom,
+		axisLeft,
+		scaleSqrt,
+		bisector as d3bisector,
+		descending,
+		min,
+		max,
+		utcYears,
+	} from 'd3';
 	import d3Tip from 'd3-tip';
 	import Scrubber from '@/components/d3/Scrubber';
 
@@ -161,18 +172,18 @@
 
 		const { innerWidth: width, innerHeight: height } = window;
 		const margin = { top: 40, right: 20, bottom: 40, left: 40 };
-		const svg = d3
-			.select('.chart_box')
+		const svg = select('.chart_box')
 			.append('svg')
 			.attr('viewBox', [0, 0, width, height])
-			.attr('width', width - margin.left - margin.right);
+			.attr('width', width - margin.left - margin.right)
+			.attr('color', '#fff');
 		// x 为经费
-		let x = d3.scaleLinear(
+		let x = scaleLinear(
 			[dataRange.value.min_money, dataRange.value.max_money],
 			[margin.left, width - margin.right]
 		);
 		// y 为文章
-		let y = d3.scaleLinear(
+		let y = scaleLinear(
 			[dataRange.value.min_paper_amount, dataRange.value.max_paper_amount],
 			[height - margin.bottom, margin.top]
 		);
@@ -181,7 +192,7 @@
 		let xAxis = (g: typeof xg) =>
 			g
 				.attr('transform', `translate(0,${height - margin.bottom})`)
-				.call(d3.axisBottom(x).ticks(width / 80))
+				.call(axisBottom(x).ticks(width / 80))
 				.call((g) => g.select('.domain').remove())
 				.call((g) =>
 					g
@@ -198,7 +209,7 @@
 		let yAxis = (g: typeof yg) =>
 			g
 				.attr('transform', `translate(${margin.left}, 0)`)
-				.call(d3.axisLeft(y))
+				.call(axisLeft(y))
 				.call((g) => g.select('.domain').remove())
 				.call((g) =>
 					g
@@ -213,7 +224,7 @@
 		yg.call(yAxis);
 
 		// 圆点半径
-		let radius = d3.scaleSqrt(
+		let radius = scaleSqrt(
 			[dataRange.value.min_fund_amount, dataRange.value.max_fund_amount],
 			[minRadius.value, width / 24]
 		);
@@ -240,7 +251,7 @@
 			}));
 		};
 		// 二分查找
-		let bisector = d3.bisector((d: [Date, number]) => d[0]).left;
+		let bisector = d3bisector((d: [Date, number]) => d[0]).left;
 		let valueAt = (datas: [Date, number][], date: Date) => {
 			const i = bisector(datas, date, 0, datas.length - 1);
 			const a = datas[i];
@@ -262,7 +273,7 @@
 			.selectAll('circle')
 			.data(dataAt(new Date(dataRange.value.min_year, 0, 1)), (d) => (d as DataInProcess).name)
 			.join('circle')
-			.sort((a, b) => d3.descending(a.population, b.population))
+			.sort((a, b) => descending(a.population, b.population))
 			.attr('cx', (d) => x(d.income))
 			.attr('cy', (d) => y(d.lifeExpectancy))
 			.attr('r', (d) => {
@@ -273,13 +284,13 @@
 			.on('mouseout', tips.value.hide)
 			.attr('fill', (d) => color.value[d.region]);
 
-		// d3.min、d3.max 在 ts 识别返回值有可能是 undefined，d3.utcYears 的参数不允许 undefined
-		let dates = d3.utcYears(
-			d3.min(currentData, (d: DataFormatted) =>
-				d3.min([d.income[0], d.population[0], d.lifeExpectancy[0]], ([date]) => date)
+		// min、max 在 ts 识别返回值有可能是 undefined，utcYears 的参数不允许 undefined
+		let dates = utcYears(
+			min(currentData, (d: DataFormatted) =>
+				min([d.income[0], d.population[0], d.lifeExpectancy[0]], ([date]) => date)
 			) as Date,
-			d3.min(currentData, (d: DataFormatted) =>
-				d3.max(
+			min(currentData, (d: DataFormatted) =>
+				max(
 					[
 						d.income[d.income.length - 1],
 						d.population[d.population.length - 1],
@@ -293,7 +304,7 @@
 		let update = (data: DataInProcess[]) => {
 			circle
 				.data(data, (d) => d.name)
-				.sort((a, b) => d3.descending(a.population, b.population))
+				.sort((a, b) => descending(a.population, b.population))
 				.transition()
 				.attr('cx', (d) => x(d.income))
 				.attr('cy', (d) => y(d.lifeExpectancy))
@@ -312,15 +323,18 @@
 		let observablehq = document.createElement('div');
 		observablehq.classList.add('observablehq');
 		// 生成进度条
-		observablehq.appendChild(
-			Scrubber(dates, {
-				autoplay: false,
-				format: (v: Date) => v.getFullYear(),
-				loop: false,
-				update: (date: Date) => update(dataAt(date)),
-				delay: 500,
-			})
-		);
+		let ob = Scrubber(dates, {
+			autoplay: true,
+			format: (v: Date) => v.getFullYear(),
+			loop: false,
+			update: (date: Date) => update(dataAt(date)),
+			delay: 500,
+		});
+		// 监听数据变化, this.o 为数据变化值
+		// ob.addEventListener('input', function () {
+		// 	console.log(this.o);
+		// });
+		observablehq.appendChild(ob);
 		box.parentElement?.insertBefore(observablehq, box);
 	});
 

@@ -1,4 +1,16 @@
-import * as d3 from 'd3';
+import {
+	scaleLinear,
+	map,
+	schemeTableau10,
+	max,
+	InternSet,
+	range,
+	scaleBand,
+	scaleOrdinal,
+	axisBottom,
+	axisLeft,
+	create,
+} from 'd3';
 import d3Tip from 'd3-tip';
 /**
  *   
@@ -15,14 +27,14 @@ import d3Tip from 'd3-tip';
   xDomain,                                          // array of x-values
   xRange = [marginLeft, width - marginRight],       // [xmin, xmax]
   xPadding = 0.1,                                   // amount of x-range to reserve to separate groups
-  yType = d3.scaleLinear,                           // type of y-scale
+  yType = scaleLinear,                           // type of y-scale
   yDomain,                                          // [ymin, ymax]
   yRange = [height - marginBottom, marginTop],      // [ymin, ymax]
   zDomain,                                          // array of z-values
   zPadding = 0.05,                                  // amount of x-range to reserve to separate bars
   yFormat,                                          // a format specifier string for the y-axis
   yLabel,                                           // a label for the y-axis
-  colors = d3.schemeTableau10,                      // array of colors
+  colors = schemeTableau10,                      // array of colors
  * 
  */
 interface GroupedBarChartOptions<T> {
@@ -31,7 +43,7 @@ interface GroupedBarChartOptions<T> {
 	z: (d: T, i: number, data: Iterable<T>) => number | string;
 
 	title?: (d: T, x: number | string, y: number | string, z: number | string) => string;
-	yType?: typeof d3.scaleLinear;
+	yType?: typeof scaleLinear;
 	colors?: readonly string[];
 	yLabel?: string;
 	marginTop?: number;
@@ -50,9 +62,6 @@ interface GroupedBarChartOptions<T> {
 	zPadding?: number;
 }
 
-interface Str {
-	toString(): string;
-}
 // Copyright 2021 Observable, Inc.
 // Released under the ISC license.
 // https://observablehq.com/@d3/grouped-bar-chart
@@ -71,39 +80,39 @@ export default function GroupedBarChart<T>(data: T[], options: GroupedBarChartOp
 		xDomain,
 		xRange = [marginLeft, width - marginRight],
 		xPadding = 0.1,
-		yType = d3.scaleLinear,
+		yType = scaleLinear,
 		yDomain,
 		yRange = [height - marginBottom, marginTop],
 		zDomain,
 		zPadding = 0.05,
 		yFormat,
 		yLabel = 'label for the y-axis',
-		colors = d3.schemeTableau10,
+		colors = schemeTableau10,
 	} = options;
 
 	// Compute values.
-	const X = d3.map(data, x);
-	const Y = d3.map(data, y);
-	const Z = d3.map(data, z);
+	const X = map(data, x);
+	const Y = map(data, y);
+	const Z = map(data, z);
 
 	// Compute default domains, and unique the x- and z-domains.
 	if (xDomain === undefined) xDomain = X;
-	if (yDomain === undefined) yDomain = [0, d3.max(Y) ?? 0];
+	if (yDomain === undefined) yDomain = [0, max(Y) ?? 0];
 	if (zDomain === undefined) zDomain = Z;
-	let xInternSet = new d3.InternSet(xDomain);
-	let zInternSet = new d3.InternSet(zDomain);
+	let xInternSet = new InternSet(xDomain);
+	let zInternSet = new InternSet(zDomain);
 
 	// Omit any data not present in both the x- and z-domain.
-	const I = d3.range(X.length).filter((i) => xInternSet.has(X[i]) && zInternSet.has(Z[i]));
+	const I = range(X.length).filter((i) => xInternSet.has(X[i]) && zInternSet.has(Z[i]));
 
 	// Construct scales, axes, and formats.
-	const xScale = d3.scaleBand(xInternSet, xRange).paddingInner(xPadding);
-	const xzScale = d3.scaleBand(zInternSet, [0, xScale.bandwidth()]).padding(zPadding);
+	const xScale = scaleBand(xInternSet, xRange).paddingInner(xPadding);
+	const xzScale = scaleBand(zInternSet, [0, xScale.bandwidth()]).padding(zPadding);
 	const yScale = yType(yDomain, yRange).nice();
-	const zScale = d3.scaleOrdinal(zDomain, colors);
-	const xAxis = d3.axisBottom(xScale).tickSizeOuter(0);
+	const zScale = scaleOrdinal(zDomain, colors);
+	const xAxis = axisBottom(xScale).tickSizeOuter(0);
 
-	const yAxis = d3.axisLeft(yScale).ticks(height / 60, yFormat);
+	const yAxis = axisLeft(yScale).ticks(height / 60, yFormat);
 
 	// Compute titles.
 	let titleFormat: (d: T, x: number | string, y: number | string, z: number | string) => string;
@@ -122,12 +131,12 @@ export default function GroupedBarChart<T>(data: T[], options: GroupedBarChartOp
 		titleFormat = (d, x, y, z) => T(d, x, formatValue(Number(y)), z);
 	}
 
-	const svg = d3
-		.create('svg')
+	const svg = create('svg')
 		.attr('width', width)
 		.attr('height', height)
 		.attr('viewBox', [0, 0, width, height])
-		.attr('style', 'max-width: 100%; height: auto; height: intrinsic;');
+		.attr('style', 'max-width: 100%; height: auto; height: intrinsic;')
+		.attr('color', '#fff');
 
 	let d3g = svg.append('g').attr('transform', `translate(${marginLeft},0)`);
 	// 贯穿全图的y轴水平线

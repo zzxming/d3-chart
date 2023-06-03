@@ -3,7 +3,10 @@
 		:loading="loading"
 		:loadError="loadError"
 	>
-		<div class="chart_box"></div>
+		<div
+			ref="chart"
+			class="chart_box"
+		></div>
 	</LoadingTip>
 </template>
 
@@ -22,16 +25,28 @@
 <script lang="ts" setup>
 	import chinaMapProvinceNameData from '@/assets/d3json/chinaMap/chinaMapProvinceNameData.json';
 	import * as GeoJSON from 'geojson';
-	import * as d3 from 'd3';
+	import {
+		geoPath,
+		scaleOrdinal,
+		quantize,
+		interpolateRainbow,
+		zoom,
+		BaseType,
+		select,
+		selectAll,
+		geoMercator,
+	} from 'd3';
 	import d3Tip from 'd3-tip';
 
 	import LoadingTip from '@/components/LoadingTip.vue';
 	import { D3ZoomEvent } from '@/interface';
 
+	const chart = ref();
+
 	let loadError = ref(false);
 	let loading = ref(true);
 	// 原始只有省份边界的数据
-	let originMapFeatures = ref<GeoJSON.Feature[]>([]);
+	let originMapFeatures = shallowRef<GeoJSON.Feature[]>([]);
 	// tip调用和this执行有关, 在on监听时要改变this指向
 	let tips = ref(
 		(d3Tip as Function)()
@@ -75,7 +90,7 @@
 		if (!originMapFeatures.value) return;
 		let map: GeoJSON.FeatureCollection = {
 			type: 'FeatureCollection',
-			features: originMapFeatures.value,
+			features: unref(originMapFeatures.value),
 		};
 
 		// 等待页面挂载完成，可以获取 dom 信息
@@ -84,23 +99,24 @@
 		const margin = { top: 40, right: 20, bottom: 40, left: 40 };
 
 		let strokeOriginWidth = 0.6;
-		let svg = d3
-			.select('.chart_box')
+		let minZoom = 1;
+		let maxZoom = 20;
+
+		let svg = select(chart.value)
 			.append('svg')
 			.attr('viewBox', [0, 0, width - margin.left - margin.right, height - margin.top - margin.bottom])
 			.attr('stroke', '#c86a7a')
 			.attr('stroke-width', strokeOriginWidth);
 		// 地图投影
-		let projection = d3
-			.geoMercator()
+		let projection = geoMercator()
 			.center([105, 38])
 			.scale(Math.min(width, height))
 			.translate([width / 2, height / 2]);
 		// geopath路径绘制
-		let path = d3.geoPath().projection(projection);
+		let path = geoPath().projection(projection);
 		// 区域颜色
 		// 建议使用固定颜色,否则在市级数据添加时,会导致颜色重新分配
-		// let color = d3.scaleOrdinal().range(d3.quantize(d3.interpolateRainbow, map.features.length));
+		// let color = scaleOrdinal().range(quantize(interpolateRainbow, map.features.length));
 		// 绘制边界
 		let g = svg.append('g');
 		let province = g
@@ -119,49 +135,19 @@
 		// 放大和拖动
 		let zoomHandle = (event: D3ZoomEvent) => {
 			const t = event.transform;
-			g.attr('transform', `translate(${t.x}, ${t.y}) scale(${t.k})`); //改变svg的位置及缩放
+			g.attr('transform', `translate(${t.x}, ${t.y}) scale(${t.k})`); // 改变svg的位置及缩放
 			g.selectAll('circle').attr('r', 2 / t.k);
 			svg.attr('stroke-width', strokeOriginWidth / t.k);
-			// 尝试控制点击缩放
-			// if (t.k > 3) {
-			//     g.selectAll("path")
-			//         .data(mapJson.features)
-			//         .join("path")
-			//         .attr("fill", "rgb(245, 243, 204)")
-			//         .attr("d", path)
-			//         .attr("data-area", (d) => d.properties.parent.adcode)
-			//         .attr("class", "area")
-			//         .on("mouseover", function () {
-			//             const area = d3.select(this);
-			//             d3.selectAll(
-			//                 `.${area.attr("class")}[data-area="${area.attr(
-			//                     "data-area"
-			//                 )}"]`
-			//             ).attr("fill", enterColor);
-			//         })
-			//         .on("mouseout", function () {
-			//             const area = d3.select(this);
-			//             d3.selectAll(
-			//                 `.${area.attr("class")}[data-area="${area.attr(
-			//                     "data-area"
-			//                 )}"]`
-			//             ).attr("fill", originColor);
-			//         })
-			//         .append("title")
-			//         .text((d) => {
-			//             return d.properties.name;
-			//         });
-			// }
 		};
-		let d3zoom = d3.zoom().scaleExtent([1, 20]).on('zoom', zoomHandle); //设置监听事件
+		let d3zoom = zoom().scaleExtent([minZoom, maxZoom]).on('zoom', zoomHandle); // 设置缩放大小和监听事件
 		svg.call(d3zoom as any);
 		// 挂载d3-tip
 		svg.call(tips.value);
 
 		let update = (data: GeoJSON.Feature[]) => {
-			//  使用join可以保证新path成功添加, 但原来其他的path不删除
+			// 这里要使用 g.selectAll 而不能用 province, 使用 province 会导致老的 path 删除不了, 使 g 内的 path 个数点一次增加一次
 			// 注意此处会有元素复用,可以插入一个title元素就知道了
-			province
+			g.selectAll('path')
 				.data(data)
 				.join('path')
 				// .attr('opacity', '0.6')
@@ -170,24 +156,25 @@
 				// 会有新元素添加,需要重写绑定事件
 				.on('mouseenter', mouseenter)
 				.on('mouseleave', mouseleave)
-				.on('click', loadInside)
+				.on('click', loadInside);
 
-				.exit()
-				.remove();
+			// .exit()
+			// .remove();
 			// .append('title')
 			// .text((d) => d.properties.name);
 		};
 
-		function mouseenter(this: SVGPathElement, e: any, d: GeoJSON.Feature) {
+		function mouseenter(this: BaseType | SVGPathElement, e: any, d: GeoJSON.Feature) {
 			tips.value.show.call(this, d);
-			// d3.select(this).attr('opacity', '1');
+			// select(this).attr('opacity', '1');
 		}
-		function mouseleave(this: SVGPathElement, e: any, d: GeoJSON.Feature) {
+		function mouseleave(this: BaseType | SVGPathElement, e: any, d: GeoJSON.Feature) {
 			tips.value.hide.call(this, d);
-			// d3.select(this).attr('opacity', '0.6');
+			// select(this).attr('opacity', '0.6');
 		}
 		// 加载市级数据
 		async function loadInside(e: any, d: GeoJSON.Feature) {
+			if (d.properties?.level !== 'province') return;
 			if (!d.properties?.name) {
 				console.log('没有此地图数据');
 				return;
