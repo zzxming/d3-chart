@@ -31,6 +31,7 @@
 	let loadError = ref(false);
 	let SingleBarData = ref<SingleBar[]>([]);
 	let loadSingleBarData = async () => {
+		loading.value = true;
 		let res = await new Promise<ModuleImport<SingleBar[]>>((resolve) => {
 			resolve(import('@/assets/d3json/Bar.json'));
 		})
@@ -147,6 +148,7 @@
 	let groupBarData = ref<GroupBar[]>([]);
 	let groupBarDataAges = ref<string[]>([]);
 	let loadGroupBarData = async () => {
+		loading.value = true;
 		let res = await new Promise<ModuleImport<{ data: GroupBar[]; age: string[] }>>((resolve) => {
 			resolve(import('@/assets/d3json/GroupBar.json'));
 		})
