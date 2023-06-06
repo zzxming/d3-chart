@@ -66,7 +66,7 @@ let Inputs = {
 		});
 	},
 };
-
+/** 函数返回值为 form 元素, 可通过监听 form.input 监听到数据变化, 变化后的值可通过 form.o 获取, 或传递 update 函数 */
 interface ScrubberArgs<T> {
 	format?: (value: T, index: number, values: T[]) => string | number;
 	initial?: number;
@@ -89,7 +89,7 @@ export default function Scrubber<T>(
 		alternate = false,
 		update = () => undefined,
 	}: ScrubberArgs<T> = {}
-) {
+): HTMLFormElement {
 	values = Array.from(values);
 	const form = html`<form
 		style="font: 12px var(--sans-serif); font-variant-numeric: tabular-nums; display: flex; height: 34px; align-items: center;"
