@@ -50,56 +50,29 @@
 		descending,
 		min,
 		max,
-		utcYears,
+		utcMonth,
+		interpolateSinebow,
 	} from 'd3';
 	import d3Tip from 'd3-tip';
 	import Scrubber from '@/components/d3/Scrubber';
 
-	let regionColor = {
-		辽宁: '#0b097d',
-		四川: '#d87171',
-		安徽: '#dbc0ab',
-		北京: '#721d73',
-		江苏: '#db02b9',
-		湖北: '#366aea',
-		香港: '#d14a1e',
-		黑龙江: '#2d5717',
-		浙江: '#5e2bea',
-		上海: '#890acb',
-		山西: '#11b72c',
-		福建: '#b3dae9',
-		广东: '#87a7d3',
-		陕西: '#1e5e5e',
-		河北: '#8e8352',
-		天津: '#4e2b41',
-		吉林: '#298ff6',
-		山东: '#e6de02',
-		重庆: '#b4ace0',
-		西藏: '#2ac073',
-		云南: '#b07097',
-		内蒙古: '#5c50dd',
-		湖南: '#6d293d',
-		河南: '#f5da86',
-		新疆: '#2bbaab',
-	};
-	type Region = keyof typeof regionColor;
 	interface Data {
 		name: string;
-		region: Region;
+		region: string;
 		income: [number, number][];
 		population: [number, number][];
 		lifeExpectancy: [number, number][];
 	}
 	interface DataFormatted {
 		name: string;
-		region: Region;
+		region: string;
 		income: [Date, number][];
 		population: [Date, number][];
 		lifeExpectancy: [Date, number][];
 	}
 	interface DataInProcess {
 		name: string;
-		region: Region;
+		region: string;
 		income: number;
 		population: number;
 		lifeExpectancy: number;
@@ -132,9 +105,7 @@
 	// );
 
 	// 临时变量，使用可以props传
-	let minRadius = ref(1);
-
-	let color = ref(regionColor);
+	let minRadius = ref(4);
 
 	let loadError = ref(false);
 	let loading = ref(true);
@@ -223,6 +194,35 @@
 				);
 		yg.call(yAxis);
 
+		let gg = svg.append('g');
+		let grid = (g: typeof gg) =>
+			g
+				.attr('stroke', 'currentColor')
+				.attr('stroke-opacity', 0.1)
+				.call((g) =>
+					g
+						.append('g')
+						.selectAll('line')
+						.data(x.ticks())
+						.join('line')
+						.attr('x1', (d) => 0.5 + x(d))
+						.attr('x2', (d) => 0.5 + x(d))
+						.attr('y1', margin.top)
+						.attr('y2', height - margin.bottom)
+				)
+				.call((g) =>
+					g
+						.append('g')
+						.selectAll('line')
+						.data(y.ticks())
+						.join('line')
+						.attr('y1', (d) => 0.5 + y(d))
+						.attr('y2', (d) => 0.5 + y(d))
+						.attr('x1', margin.left)
+						.attr('x2', width - margin.right)
+				);
+		gg.call(grid);
+
 		// 圆点半径
 		let radius = scaleSqrt(
 			[dataRange.value.min_fund_amount, dataRange.value.max_fund_amount],
@@ -266,6 +266,8 @@
 		};
 		// 挂载d3-tip
 		svg.call(tips.value);
+
+		let color = new Array(currentData.length).fill(0).map((v, i) => interpolateSinebow(Math.random()));
 		// 画圆点
 		const circle = svg
 			.append('g')
@@ -282,30 +284,30 @@
 			})
 			.on('mouseover', tips.value.show)
 			.on('mouseout', tips.value.hide)
-			.attr('fill', (d) => color.value[d.region]);
+			.attr('fill', (_, i) => color[i]);
 
+		// 把按年份的数据拆成按月份
 		// min、max 在 ts 识别返回值有可能是 undefined，utcYears 的参数不允许 undefined
-		let dates = utcYears(
-			min(currentData, (d: DataFormatted) =>
-				min([d.income[0], d.population[0], d.lifeExpectancy[0]], ([date]) => date)
-			) as Date,
-			min(currentData, (d: DataFormatted) =>
-				max(
+		let dates = utcMonth.range(
+			min(currentData, (d: DataFormatted) => {
+				return min([d.income[0], d.population[0], d.lifeExpectancy[0]], ([date]) => date);
+			}) as Date,
+			min(currentData, (d: DataFormatted) => {
+				return max(
 					[
 						d.income[d.income.length - 1],
 						d.population[d.population.length - 1],
 						d.lifeExpectancy[d.lifeExpectancy.length - 1],
 					],
 					([date]) => date
-				)
-			) as Date
+				);
+			}) as Date
 		);
 		// 更新数据
 		let update = (data: DataInProcess[]) => {
 			circle
 				.data(data, (d) => d.name)
 				.sort((a, b) => descending(a.population, b.population))
-				.transition()
 				.attr('cx', (d) => x(d.income))
 				.attr('cy', (d) => y(d.lifeExpectancy))
 				.attr('r', (d) => {
@@ -328,7 +330,6 @@
 			format: (v: Date) => v.getFullYear(),
 			loop: false,
 			update: (date: Date) => update(dataAt(date)),
-			delay: 500,
 		});
 		// 监听数据变化, this.o 为数据变化值
 		// ob.addEventListener('input', function () {
