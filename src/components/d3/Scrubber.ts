@@ -66,6 +66,7 @@ let Inputs = {
 		});
 	},
 };
+// 不建议传递 delay 参数, 不传递 delay 使用的是 requestAnimationFrame, 能够保证帧率
 /** 函数返回值为 form 元素, 可通过监听 form.input 监听到数据变化, 变化后的值可通过 form.o 获取, 或传递 update 函数 */
 interface ScrubberArgs<T> {
 	format?: (value: T, index: number, values: T[]) => string | number;
@@ -158,7 +159,7 @@ export default function Scrubber<T>(
 		form.value = values[form.i.valueAsNumber];
 
 		form.o.value = format(form.value, form.i.valueAsNumber, values);
-		update(form.value);
+		update && update(form.value);
 	};
 	form.b.onclick = () => {
 		if (running()) return stop();
