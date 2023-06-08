@@ -60,15 +60,34 @@
 	.nav {
 		display: flex;
 		align-items: center;
-		justify-content: center;
+		justify-content: flex-start;
 		width: 100%;
 		background-color: var(--vt-c-text-light-2);
 		color: var(--vt-c-text-dark-2);
 		z-index: 1000;
+		overflow-y: hidden;
+		overflow-x: scroll;
 		&_item {
+			position: relative;
 			padding: 4px 8px;
 			color: inherit;
 			text-decoration: none;
+			@marginGap: 4px;
+			&:not(:last-child) {
+				margin-right: @marginGap;
+			}
+			&:not(:first-child) {
+				&::after {
+					position: absolute;
+					content: '';
+					display: inline-block;
+					top: 10%;
+					left: -(@marginGap / 2);
+					width: 0px;
+					height: 80%;
+					border-left: 1px solid #ccc;
+				}
+			}
 		}
 	}
 	.error {

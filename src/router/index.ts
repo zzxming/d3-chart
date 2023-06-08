@@ -36,6 +36,11 @@ export const routes = [
 		name: 'StackedAreaChart,Streamgraph',
 		component: () => import('@/views/StackedAreaChart,Streamgraph.vue'),
 	},
+	{
+		path: '/AnimatedTreemap',
+		name: 'AnimatedTreemap',
+		component: () => import('@/views/AnimatedTreemap.vue'),
+	},
 ];
 
 const router = createRouter({
