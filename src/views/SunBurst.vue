@@ -218,5 +218,69 @@
 			const y = ((d.y0 + d.y1) / 2) * radius;
 			return `rotate(${x - 90}) translate(${y},0) rotate(${x < 180 ? 0 : 180})`;
 		}
+
+		// // 防止文字超出 path 的绘制
+		// {
+		// 	let realR = (singleLayer.value + 1) * radius;
+		// 	let labelWidth = (d) => {
+		// 		return realR - widthMargin * 2;
+		// 	};
+		// 	let labelVisible = (d) => {
+		// 		return +(d.y1 <= 3 && d.y0 >= 1 && (d.y1 - d.y0) * (d.x1 - d.x0) > 0.08);
+		// 	};
+		// 	let labelStyle = (d) => {
+		// 		// 根据层级改变字体大小
+		// 		return `
+		// 			font-size: ${0.5 ** d.depth * 8 + 10}px;
+		// 			text-overflow: ellipsis;
+		// 			white-space: nowrap;
+		// 			user-select: none;
+		// 			text-align: center;
+		// 		`;
+		// 	};
+		// 	let labelTransform = (d) => {
+		// 		const x = (((d.x0 + d.x1) / 2) * 180) / Math.PI;
+		// 		const y = ((d.y0 + d.y1 + (singleLayer.value ? 1 : 0)) / 2) * radius;
+		// 		let direct = x < 180 ? -1 : 1;
+		// 		return `rotate(${x - 90}) translate(${y + (direct * realR) / 2 + -direct * widthMargin}, 0) rotate(${
+		// 			x < 180 ? 0 : 180
+		// 		})`;
+		// 	};
+
+		// 	leaf.on('mouseover', tips.value.show).on('mouseout', tips.value.hide);
+		// 	leaf.append('path')
+		// 		.attr('fill', (d) => {
+		// 			// depth > 1 保证有 parent
+		// 			while (d.depth > 1) d = d.parent;
+		// 			return color(d.data.name);
+		// 		})
+		// 		.attr('fill-opacity', (d) => (arcVisible(d.current) ? (d.children ? 0.6 : 0.4) : 0))
+		// 		.attr('pointer-events', (d) => (arcVisible(d.current) ? 'auto' : 'none'))
+		// 		.attr('d', (d) => arc(d.current));
+
+		// 	let textHeight = 20;
+		// 	let widthMargin = 8;
+		// 	leaf.append('foreignObject')
+		// 		.attr('width', labelWidth)
+		// 		.attr('height', textHeight)
+		// 		// 由于 foreignObject 不像 text 有 text-anchor 可以调整文字位置, 所有旋转后会是元素(文字)顶部在 path 中心, 要把文字减去高度一半使其居中
+		// 		.attr('y', -textHeight / 2)
+		// 		.attr('opacity', labelVisible)
+		// 		.attr('style', labelStyle)
+		// 		.attr('transform', labelTransform)
+		// 		.text((d) => d.data.name);
+
+		// 	// 圆心
+		// 	g.append('circle').datum(root).attr('r', radius).attr('fill', 'none').attr('pointer-events', 'all');
+		// 	g.append('foreignObject')
+		// 		.attr('width', radius * 2 - widthMargin * 2)
+		// 		.attr('height', textHeight)
+		// 		.attr('x', -radius + widthMargin)
+		// 		.attr('y', -textHeight / 2)
+		// 		.attr('style', (d) => {
+		// 			return `text-align: center; text-overflow: ellipsis; white-space: nowrap; `;
+		// 		})
+		// 		.text(root.data.name);
+		// }
 	});
 </script>

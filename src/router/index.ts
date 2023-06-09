@@ -41,6 +41,11 @@ export const routes = [
 		name: 'AnimatedTreemap',
 		component: () => import('@/views/AnimatedTreemap.vue'),
 	},
+	{
+		path: '/TestSunBurst',
+		name: 'TestSunBurst',
+		component: () => import('@/views/TestSunBurst.vue'),
+	},
 ];
 
 const router = createRouter({
