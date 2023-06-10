@@ -36,6 +36,7 @@ export default defineConfig({
 			},
 		},
 	},
+	base: '/d3-chart',
 	build: {
 		outDir: 'docs',
 	},
