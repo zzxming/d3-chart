@@ -137,7 +137,7 @@ export default function Streamgraph<
 		.attr('width', width)
 		.attr('height', height)
 		.attr('viewBox', [0, 0, width, height])
-		.attr('style', 'max-width: 100%; height: auto; height: intrinsic;');
+		.attr('style', 'max-width: 100%; height: auto; height: intrinsic; color: #fff;');
 
 	const area = d3area<(typeof series)[0][0]>()
 		.x(({ i }) => xScale(X[i]))
@@ -176,7 +176,7 @@ export default function Streamgraph<
 					.attr('x', -marginLeft)
 					.attr('y', 10)
 					.attr('font-family', 'sans-serif')
-					.attr('fill', '#fff')
+					.attr('fill', 'currentColor')
 					.attr('font-size', 12)
 					.text(yLabel);
 			}
