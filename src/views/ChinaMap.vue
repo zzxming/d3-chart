@@ -61,13 +61,15 @@
 		let chinaMapData = [];
 		// 循环加载所有省级数据
 		for (let i = 0; i < chinaMapProvinceNameData.length; i++) {
-			let data = await import(`@/assets/d3json/chinaMap/wrap/${chinaMapProvinceNameData[i]}.json`);
-			chinaMapData.push(data.default);
+			let data = import(`@/assets/d3json/chinaMap/wrap/${chinaMapProvinceNameData[i]}.json`);
+			chinaMapData.push(data);
 		}
-		let data: GeoJSON.FeatureCollection[] | void = await Promise.all(chinaMapData).catch((err) => {
-			console.log(err);
-			loadError.value = true;
-		});
+		let data: GeoJSON.FeatureCollection[] | void = await Promise.all(chinaMapData)
+			.then((res) => res.map((v) => v.default))
+			.catch((err) => {
+				console.log(err);
+				loadError.value = true;
+			});
 		loading.value = false;
 
 		if (data) {

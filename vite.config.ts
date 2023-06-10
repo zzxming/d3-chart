@@ -36,7 +36,7 @@ export default defineConfig({
 			},
 		},
 	},
-	base: '/d3-chart/',
+	base: process.env.NODE_ENV === 'production' ? '/d3-chart/' : '/',
 	build: {
 		outDir: 'docs',
 	},
