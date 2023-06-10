@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router';
-// import Home from '@/views/Home.vue';
 
 export const routes = [
 	{
@@ -10,6 +9,11 @@ export const routes = [
 		path: '/ChinaMapVue',
 		name: 'ChinaMapVue',
 		component: () => import('@/views/ChinaMap.vue'),
+	},
+	{
+		path: '/ZoomableSunBurst',
+		name: 'ZoomableSunBurst',
+		component: () => import('@/views/ZoomableSunBurst.vue'),
 	},
 	{
 		path: '/SunBurst',
@@ -40,11 +44,6 @@ export const routes = [
 		path: '/AnimatedTreemap',
 		name: 'AnimatedTreemap',
 		component: () => import('@/views/AnimatedTreemap.vue'),
-	},
-	{
-		path: '/TestSunBurst',
-		name: 'TestSunBurst',
-		component: () => import('@/views/TestSunBurst.vue'),
 	},
 ];
 
