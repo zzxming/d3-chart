@@ -39,7 +39,7 @@
 
 	import LoadingTip from '@/components/LoadingTip.vue';
 	import { D3ZoomEvent } from '@/interface';
-	import axios from 'axios';
+	import axios from '@/assets/api';
 
 	let { data: chinaMapProvinceNameData } = await axios.get('/d3json/chinaMap/chinaMapProvinceNameData.json');
 

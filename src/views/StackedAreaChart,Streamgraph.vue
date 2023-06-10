@@ -13,9 +13,8 @@
 <style lang="less" scoped></style>
 
 <script lang="ts" setup>
-	import { scaleUtc } from 'd3';
 	import Streamgraph from '@/components/d3/Streamgraph';
-	import axios from 'axios';
+	import axios from '@/assets/api';
 
 	interface Data {
 		date: string;

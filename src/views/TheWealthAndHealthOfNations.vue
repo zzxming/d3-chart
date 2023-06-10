@@ -55,7 +55,7 @@
 	} from 'd3';
 	import d3Tip from 'd3-tip';
 	import Scrubber from '@/components/d3/Scrubber';
-	import axios from 'axios';
+	import axios from '@/assets/api';
 
 	interface Data {
 		name: string;

@@ -12,9 +12,10 @@
 <script lang="ts" setup>
 	import { select, scaleBand, max, scaleLinear, axisBottom, axisLeft, zoom, schemeSpectral } from 'd3';
 	import d3Tip from 'd3-tip';
-	import { D3ZoomEvent, ModuleImport } from '@/interface';
+	import { D3ZoomEvent } from '@/interface';
 	import GroupBarChart from '@/components/d3/GroupedBarChart';
-	import axios, { AxiosResponse } from 'axios';
+	import axios from '@/assets/api';
+	import { AxiosResponse } from 'axios';
 
 	interface SingleBar {
 		name: string | number;

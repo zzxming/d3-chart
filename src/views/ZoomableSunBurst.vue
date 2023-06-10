@@ -17,7 +17,6 @@
 </style>
 
 <script lang="ts" setup>
-	import axios from 'axios';
 	import {
 		create,
 		format as d3format,
@@ -34,6 +33,7 @@
 		HierarchyRectangularNode,
 	} from 'd3';
 	import d3Tip from 'd3-tip';
+	import axios from '@/assets/api';
 
 	interface SunDataWitchChildren {
 		name: string;

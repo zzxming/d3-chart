@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 	import Sunburst from '@/components/d3/SunBurst';
-	import axios from 'axios';
+	import axios from '@/assets/api';
 
 	interface SunDataWitchChildren {
 		name: string;

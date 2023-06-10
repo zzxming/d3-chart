@@ -39,7 +39,7 @@
 		tsvParse,
 	} from 'd3';
 	import Scrubber from '@/components/d3/Scrubber';
-	import axios from 'axios';
+	import axios from '@/assets/api';
 
 	interface HierarchyRectangularNode<T> extends d3HierarchyRectangularNode<T>, ID {}
 
