@@ -23,7 +23,6 @@
 </style>
 
 <script lang="ts" setup>
-	import chinaMapProvinceNameData from '@/assets/d3json/chinaMap/chinaMapProvinceNameData.json';
 	import * as GeoJSON from 'geojson';
 	import {
 		geoPath,
@@ -40,6 +39,9 @@
 
 	import LoadingTip from '@/components/LoadingTip.vue';
 	import { D3ZoomEvent } from '@/interface';
+	import axios from 'axios';
+
+	let { data: chinaMapProvinceNameData } = await axios.get('/d3json/chinaMap/chinaMapProvinceNameData.json');
 
 	const chart = ref();
 
@@ -61,11 +63,11 @@
 		let chinaMapData = [];
 		// 循环加载所有省级数据
 		for (let i = 0; i < chinaMapProvinceNameData.length; i++) {
-			let data = import(`@/assets/d3json/chinaMap/wrap/${chinaMapProvinceNameData[i]}.json`);
+			let data = axios.get(`/d3json/chinaMap/wrap/${chinaMapProvinceNameData[i]}.json`);
 			chinaMapData.push(data);
 		}
 		let data: GeoJSON.FeatureCollection[] | void = await Promise.all(chinaMapData)
-			.then((res) => res.map((v) => v.default))
+			.then((res) => res.map((v) => v.data))
 			.catch((err) => {
 				console.log(err);
 				loadError.value = true;
@@ -181,9 +183,9 @@
 				console.log('没有此地图数据');
 				return;
 			}
-			let cityData = await import(`@/assets/d3json/chinaMap/inside/${d.properties?.name}.json`);
+			let cityData = await axios.get(`/d3json/chinaMap/inside/${d.properties?.name}.json`);
 			// console.log(cityData.default);
-			let newData = reaplaceData(d.properties.adcode, cityData.default);
+			let newData = reaplaceData(d.properties.adcode, cityData.data);
 			// console.log(newData);
 			if (newData.length < 1) {
 				return;

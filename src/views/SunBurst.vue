@@ -18,6 +18,7 @@
 
 <script setup lang="ts">
 	import Sunburst from '@/components/d3/SunBurst';
+	import axios from 'axios';
 
 	interface SunDataWitchChildren {
 		name: string;
@@ -40,7 +41,7 @@
 
 	let loadData = async () => {
 		let res = await new Promise<Data>(async (resolve, reject) => {
-			resolve((await import('@/assets/d3json/ZoomableSunburst.json')).default as Data);
+			resolve((await axios.get('/d3json/ZoomableSunburst.json')).data as Data);
 		}).catch((err) => {
 			console.log(err);
 			loadError.value = true;

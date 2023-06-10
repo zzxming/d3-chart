@@ -13,8 +13,8 @@
 	import { select, scaleBand, max, scaleLinear, axisBottom, axisLeft, zoom, schemeSpectral } from 'd3';
 	import d3Tip from 'd3-tip';
 	import { D3ZoomEvent, ModuleImport } from '@/interface';
-
 	import GroupBarChart from '@/components/d3/GroupedBarChart';
+	import axios, { AxiosResponse } from 'axios';
 
 	interface SingleBar {
 		name: string | number;
@@ -32,10 +32,10 @@
 	let SingleBarData = ref<SingleBar[]>([]);
 	let loadSingleBarData = async () => {
 		loading.value = true;
-		let res = await new Promise<ModuleImport<SingleBar[]>>((resolve) => {
-			resolve(import('@/assets/d3json/Bar.json'));
+		let res = await new Promise<AxiosResponse<SingleBar[]>>((resolve) => {
+			resolve(axios.get('/d3json/Bar.json'));
 		})
-			.then((res) => res.default)
+			.then((res) => res.data)
 			.catch((err) => {
 				console.log(err);
 				loadError.value = true;
@@ -149,10 +149,10 @@
 	let groupBarDataAges = ref<string[]>([]);
 	let loadGroupBarData = async () => {
 		loading.value = true;
-		let res = await new Promise<ModuleImport<{ data: GroupBar[]; age: string[] }>>((resolve) => {
-			resolve(import('@/assets/d3json/GroupBar.json'));
+		let res = await new Promise<AxiosResponse<{ data: GroupBar[]; age: string[] }>>((resolve) => {
+			resolve(axios.get('/d3json/GroupBar.json'));
 		})
-			.then((res) => res.default)
+			.then((res) => res.data)
 			.catch((err) => {
 				console.log(err);
 				loadError.value = true;

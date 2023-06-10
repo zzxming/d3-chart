@@ -55,6 +55,7 @@
 	} from 'd3';
 	import d3Tip from 'd3-tip';
 	import Scrubber from '@/components/d3/Scrubber';
+	import axios from 'axios';
 
 	interface Data {
 		name: string;
@@ -124,7 +125,7 @@
 		loading.value = true;
 
 		let res = await new Promise<LoadData>(async (resolve, reject) => {
-			resolve((await import(`@/assets/d3json/TheWealthAndHealthOfNations.json`)).default as LoadData);
+			resolve((await axios.get(`/d3json/TheWealthAndHealthOfNations.json`)).data as LoadData);
 		}).catch((err) => {
 			console.log(err);
 			loadError.value = true;

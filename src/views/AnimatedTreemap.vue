@@ -35,8 +35,11 @@
 		HierarchyRectangularNode as d3HierarchyRectangularNode,
 		Selection,
 		BaseType,
+		csvParse,
+		tsvParse,
 	} from 'd3';
 	import Scrubber from '@/components/d3/Scrubber';
+	import axios from 'axios';
 
 	interface HierarchyRectangularNode<T> extends d3HierarchyRectangularNode<T>, ID {}
 
@@ -74,17 +77,20 @@
 
 	let loadData = async () => {
 		const keys = range(1790, 2000, 10);
+
 		let res = await Promise.all([
-			csv('/src/assets/d3json/animatedTreemap/census-regions.csv'),
-			tsv('/src/assets/d3json/animatedTreemap/population.tsv'),
+			axios.get(`/d3json/animatedTreemap/census-regions.csv`),
+			axios.get(`/d3json/animatedTreemap/population.tsv`),
 		])
 			.then(([regions, states]) => {
-				let statesFormated: States[] = states.slice(1).map((item) => ({
+				let regionsData = csvParse(regions.data);
+				let statesData = tsvParse(states.data);
+				let statesFormated: States[] = statesData.slice(1).map((item) => ({
 					name: item[''] as string,
 					values: keys.map((key) => Number((item[key] ?? '').replace(/,/g, ''))),
 				}));
 
-				let regionsFormated = [...regions] as unknown as Region[];
+				let regionsFormated = [...regionsData] as unknown as Region[];
 				return [regionsFormated, statesFormated];
 			})
 			.catch((err) => {

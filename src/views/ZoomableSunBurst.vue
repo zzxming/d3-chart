@@ -17,6 +17,7 @@
 </style>
 
 <script lang="ts" setup>
+	import axios from 'axios';
 	import {
 		create,
 		format as d3format,
@@ -68,7 +69,7 @@
 	// 加载数据
 	let loadData = async () => {
 		let res = await new Promise<Data>(async (resolve, reject) => {
-			resolve((await import('@/assets/d3json/ZoomableSunburst.json')).default as Data);
+			resolve((await axios.get('/d3json/ZoomableSunburst.json')).data as Data);
 		}).catch((err) => {
 			console.log(err);
 			loadError.value = true;

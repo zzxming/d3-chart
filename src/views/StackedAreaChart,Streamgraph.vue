@@ -15,6 +15,7 @@
 <script lang="ts" setup>
 	import { scaleUtc } from 'd3';
 	import Streamgraph from '@/components/d3/Streamgraph';
+	import axios from 'axios';
 
 	interface Data {
 		date: string;
@@ -29,14 +30,14 @@
 
 	let data = shallowRef<Data[]>([]);
 	let loadData = async () => {
-		let res = await import(`@/assets/d3json/StackedAreaChart,Streamgraph.json`).catch((err) => {
+		let res = await axios.get(`/d3json/StackedAreaChart,Streamgraph.json`).catch((err) => {
 			console.log(err);
 			loadError.value = true;
 		});
 
 		loading.value = false;
 		if (res) {
-			data.value = res.default;
+			data.value = res.data;
 		}
 	};
 	onMounted(async () => {
