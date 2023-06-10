@@ -1,6 +1,6 @@
 # d3-chart
 
-This is a template for drawing charts using d3.js.
+This is a template for drawing charts using d3.js. [online demo](https://zzxming.github.io/d3-chart/)
 
 ## Project Setup
 
