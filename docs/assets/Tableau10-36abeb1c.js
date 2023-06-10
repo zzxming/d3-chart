@@ -1,0 +1,1 @@
+import{c as t}from"./colors-98f238a0.js";function n(o,r){if(typeof o[Symbol.iterator]!="function")throw new TypeError("values is not iterable");if(typeof r!="function")throw new TypeError("mapper is not a function");return Array.from(o,(a,e)=>r(a,e,o))}const c=t("4e79a7f28e2ce1575976b7b259a14fedc949af7aa1ff9da79c755fbab0ab");export{n as m,c as s};
